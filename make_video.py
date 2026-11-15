@@ -40,7 +40,12 @@ for i, s in enumerate(scenes):
 async def tts():
     text = data["lyrics"].replace("\n", ". ")
     await edge_tts.Communicate(text, "en-US-AnaNeural", rate="-15%").save("out/voice.mp3")
-asyncio.run(tts())
+try:
+    asyncio.run(tts())
+except Exception:
+    subprocess.run(["pip", "install", "gTTS"], check=True)
+    from gtts import gTTS
+    gTTS(data["lyrics"].replace("\n", ". "), lang="en").save("out/voice.mp3")
 
 dur = float(subprocess.check_output(
     ["ffprobe", "-v", "error", "-show_entries", "format=duration",
