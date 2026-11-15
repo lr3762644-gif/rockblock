@@ -29,17 +29,27 @@ open("out/info.txt", "w").write(data["title"] + "\n\n" + data["description"] + "
 scenes = data["scenes"]
 for i, s in enumerate(scenes):
     url = ("https://image.pollinations.ai/prompt/" + urllib.parse.quote(s)
-           + "?width=1280&height=720&nologo=true&seed=" + str(i))
-    for _ in range(4):
-        resp = requests.get(url, timeout=180)
-        if resp.ok:
-            break
-        time.sleep(8)
-    open(f"out/s{i}.jpg", "wb").write(resp.content)
+           + "?width=1024&height=576&nologo=true&seed=" + str(i))
+    ok = False
+    for _ in range(3):
+        try:
+            resp = requests.get(url, timeout=60)
+            if resp.ok and len(resp.content) > 5000:
+                open(f"out/s{i}.jpg", "wb").write(resp.content)
+                ok = True
+                break
+        except Exception:
+            pass
+        time.sleep(5)
+    if not ok:
+        subprocess.run(
+            ["ffmpeg", "-y", "-f", "lavfi", "-i", "color=c=0x3399ff:s=1280x720",
+             "-frames:v", "1", f"out/s{i}.jpg"], check=True)
 
 async def tts():
     text = data["lyrics"].replace("\n", ". ")
     await edge_tts.Communicate(text, "en-US-AnaNeural", rate="-15%").save("out/voice.mp3")
+
 try:
     asyncio.run(tts())
 except Exception:
