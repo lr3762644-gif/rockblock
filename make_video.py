@@ -14,11 +14,13 @@ scenes (list of 6 image prompts, each: 3D Pixar style, cute 3 year old boy Johnn
 curly black hair, yellow t-shirt, blue shorts, bright colorful background, plus the scene action)."""
 
 r = requests.post(
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent",
     headers={"x-goog-api-key": KEY},
     json={"contents": [{"parts": [{"text": prompt}]}],
           "generationConfig": {"responseMimeType": "application/json"}},
     timeout=120)
+if "candidates" not in r.json():
+    raise SystemExit(r.text)
 data = json.loads(r.json()["candidates"][0]["content"]["parts"][0]["text"])
 
 os.makedirs("out", exist_ok=True)
